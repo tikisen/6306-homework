@@ -18,13 +18,13 @@ First I had to be sure to install the `fivethirtyeight` package and run it.
 
 
 ```r
-install.packages("fivethirtyeight",repos =  "http://cran.us.r-project.org")
+install.packages("fivethirtyeight", repos =  "http://cran.us.r-project.org")
 ```
 
 ```
 ## 
 ## The downloaded binary packages are in
-## 	/var/folders/3b/4yr_49g17gn2h9_h6n5zyl6w0000gr/T//RtmpodTrc8/downloaded_packages
+## 	/var/folders/3b/4yr_49g17gn2h9_h6n5zyl6w0000gr/T//RtmpoouwvA/downloaded_packages
 ```
 
 ```r
@@ -87,8 +87,8 @@ barplot(major_count, las=2, main = "Frequency of College Majors from Carnevale e
 write.csv(df,row.names = FALSE, file = "/Users/tq/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/GitHub Repo/smu-msds-homework/6306-homework/unit04/college_recent_grads.csv")
 ```
 
-#Github Repository
+##Github Repository
 
 Here is a link to my homework Git repository
 
-https://github.com/tikisen/6306-homework
+https://github.com/tikisen/smu-msds-homework 
