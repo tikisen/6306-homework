@@ -1,0 +1,47 @@
+---
+title: "MSDS 6306 Unit 04 Assignment"
+author: "TQ Senkungu"
+date: "6/6/2018"
+output:
+    html_document:
+        keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+The related article is here https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/
+
+```{r college_recent_grads}
+install.packages("fivethirtyeight")
+library("fivethirtyeight")
+df <- college_recent_grads
+vignette("fivethirtyeight", package = "fivethirtyeight")
+dim(df)
+colnames(df)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+length(colnames(df))
+major_count <- table(df$major_category)
+par(las=2)
+barplot(major_count, las=2, main = "Frequency of College Majors from Carnevale et al", xlab = "Major", ylab = "Frequency", horiz = TRUE, col = "red")
+write.csv(df,row.names = FALSE, file = "/Users/tq/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/GitHub Repo/6306-homework/unit04/college_recent_grads.csv")
+```
+
+#Github Repository
+
+Here is a link to 
+
+https://github.com/tikisen/6306-homework
