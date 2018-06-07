@@ -15,6 +15,8 @@ We get some data from the folks at Five Thirty Eight to do some analysis. The da
 
 First I had to be sure to install the `fivethirtyeight` package and run it.
 
+The article is linked at https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/
+
 
 
 ```r
