@@ -206,3 +206,5 @@ final_girls_list
 ```r
 write.csv(final_girls_list, file = "girl_names.csv", row.names=FALSE)
 ```
+
+github location: https://github.com/tikisen/smu-msds-homework/tree/master/6306-homework/unit05

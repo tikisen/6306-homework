@@ -97,3 +97,5 @@ final_girls_list <- head(final_sorted_female[,c("Name", "Total")], 10)
 final_girls_list
 write.csv(final_girls_list, file = "girl_names.csv", row.names=FALSE)
 ```
+
+github location: https://github.com/tikisen/smu-msds-homework/tree/master/6306-homework/unit05
