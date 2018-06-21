@@ -1,0 +1,99 @@
+---
+title: "Assignment 5"
+author: "TQ Senkungu"
+date: "6/14/2018"
+output:
+    html_document:
+        keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Data Munging
+
+###a. First I import the data and add column names.
+```{r yob2016a}
+setwd("~/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/GitHub Repo/smu-msds-homework/6306-homework/unit05")
+df <- read.delim("yob2016.txt", header = FALSE, sep = ";")
+names(df) <- c("Name", "Sex", "Frequency")
+```
+###b. This is the summary and structure
+```{r yob2016b}
+str(df)
+summary(df)
+```
+###c. I list the misspelled name
+```{r yob2016c}
+misspelled_name <- df[grep("yyy",df$Name), ]
+misspelled_name
+```
+###d. Here is the list with the missplled name removed
+```{r yob2016d}
+y2016 <- df[-c(216), ]
+```
+
+##2. Data Merging for the 2016 Data
+
+###a. Import the file into R
+```{r y2015a}
+setwd("~/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/GitHub Repo/smu-msds-homework/6306-homework/unit05")
+y2015 <- read.delim("yob2015.txt", header = FALSE, sep = ",")
+names(y2015) <- c("Name", "Sex", "Frequency")
+```
+
+###b. Here are the last 10 rows.
+```{r yob2015b}
+tail(y2015, 10)
+```
+All of the last 10 items which are all names starting with Z were also used just 5 times. There are no NA values.
+
+###c. I merged the two tables by name and sex and checked to ensure there are no NA values.
+```{r y2015c}
+final <- merge(y2015,y2016,by=c("Name","Sex"))
+sapply(final, function(x) any(is.na(x)))
+```
+
+
+##3. Data Summary
+
+###a. Total the frequencies of both years
+```{r sum the frequencies}
+final$Total <- rowSums(final[,c("Frequency.x", "Frequency.y")])
+head(final)
+```
+
+I don't understand question 3a. But there were 26549 total people on the list. If we say these are popular names, that's the number.
+
+###b. I sorted the data by the Total column.
+```{r sort_totals}
+final_sorted <- final[order(-final$Total), ]
+head(final_sorted, 10)
+```
+Here are the names top 10 most popular names:
+
+Emma
+Olivia
+Noah
+Liam
+Sophia
+Ava
+Mason
+William
+Jacob
+Isabella
+
+###c. Here is the list without boys
+```{r remove boys}
+final_sorted_female <- final_sorted[-which(final_sorted$Sex  == "M"),]
+head(final_sorted_female,10)
+```
+
+###d. I created a csv with the names and frequencies.
+
+```{r csv export}
+final_girls_list <- head(final_sorted_female[,c("Name", "Total")], 10)
+final_girls_list
+write.csv(final_girls_list, file = "girl_names.csv", row.names=FALSE)
+```
