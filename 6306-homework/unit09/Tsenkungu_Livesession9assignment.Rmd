@@ -1,0 +1,123 @@
+---
+title: "Assignment 09"
+output:
+    html_document:
+        keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Doing Data Science Unit 09 Assignment
+
+## Question 1 Harry Potter Cast
+
+### b. Scrape IMDB Page for Cast Table
+
+```{r page scrape}
+#Install and load the rvest package
+install.packages("rvest", repo = "https://cran.rstudio.com")
+library('rvest')
+
+#Specifying the url for desired website to be scrapped
+url <- 'https://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1'
+
+#load libraries
+library(RCurl)
+library(XML)
+
+#xml download method
+character_tables <- readHTMLTable(url)
+
+#download the tables and pull the cast table
+tabs = getURL(url)
+cast <- readHTMLTable(tabs, stringsAsFactors = F, which = 3)
+```
+
+### c. Clean up the table
+
+```{r actor table clean up}
+#add names to columns
+colnames(cast) <- c("","Actor","","Character")
+
+#remove empty or meaningless columns
+cast <- cast[,-c(1,3)]
+
+```
+
+### d. Split Actor Names
+```{r split actor first and last name}
+#load library
+library(tidyr)
+
+#find first name and split
+cast_final <- extract(cast, Actor, into = c("Actor FirstName", "Actor LastName"), "([^ ]+) (.*)", remove = T)
+
+```
+
+### e. First 10 Rows of Data
+
+```{r first 10 actor rows}
+head(cast_final, 10)
+```
+
+## 2. Sports Ball
+
+### b. Scrape Stats Table
+```{r scrape stats table}
+#name url
+hoops_url <- 'http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs'
+
+#load libraries
+library(RCurl)
+library(XML)
+
+#download tables
+hoops_tabs = getURL(hoops_url)
+
+#pull and ID stats table
+shooting_stats <- readHTMLTable(hoops_tabs, header = TRUE, stringsAsFactors = F, which = 2)
+```
+
+### c. Clean up Stats Table
+```{r clean up stats table}
+#Find the last row with totals
+last_row <- nrow(shooting_stats)
+last_row
+
+#keep all except totals row
+shooting_stats<-shooting_stats[1:(last_row-1),]
+
+#make header row names in first row
+#create a header function
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+
+#assign header names to stats table
+shooting_stats <- header.true(shooting_stats)
+
+#split off player position
+shooting_stats_final <- extract(shooting_stats, PLAYER, into = c("PLAYER", "POSITION"), "([^,]+),(.*)")
+
+#check column types
+sapply(shooting_stats_final, class)
+
+#select columns with numbered stats
+cols = c(3:16)
+
+#change type to numeric
+shooting_stats_final[,cols] = apply(shooting_stats_final[,cols], 2, function(x) as.numeric(as.character(x))) 
+
+#show changed class of columns
+sapply(shooting_stats_final, class)
+
+shooting_stats_final
+```
+
+### d. Create colorful barchart
+```{r barchart}
+barplot(shooting_stats_final$`FG%`, names.arg = shooting_stats_final$PLAYER, las = 2, main = "Spurs Player Statistics", xlab = "Player Names", ylab = "FG%", col=ifelse(grepl("PG", shooting_stats_final$POSITION), "red", ifelse(grepl("SG", shooting_stats_final$POSITION), "blue", ifelse(grepl("SF", shooting_stats_final$POSITION), "grey", ifelse(grepl("PF", shooting_stats_final$POSITION),"white", "black"))))) #used ifelse to select color by position
+```
