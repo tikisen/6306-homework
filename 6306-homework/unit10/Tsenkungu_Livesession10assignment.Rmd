@@ -1,0 +1,142 @@
+---
+title: "Assignment 10"
+author: "TQ Senkungu"
+date: "7/18/2018"
+output:
+    html_document:
+        keep_md: true
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Mental Health Clinics
+
+### b. State Abbreviations
+
+```{r state abbreviations}
+#load the experimental VA data
+load("~/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/Homework/Assignment 10/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+
+#Create a list of the unique state names
+state_abbr <- unique(mh2015_puf$LST)
+state_abbr
+```
+
+### c. Filter to only CONUS medical center count
+
+```{r filter to conus count}
+#load dplyr to do counts
+library(dplyr)
+
+#trim blank spaces in LST (state) column. It was jacking up the logical statement to subset the data frame
+mh2015_puf$LST <- trimws(mh2015_puf$LST)
+
+#create a subset of CONUS states
+mh2015_puf_conus <- subset(mh2015_puf, !(LST %in% c("AK", "HI", "AS", "GU", "PR", "VI")))
+#summary(mh2015_puf)
+
+#make function to count occurences of something 
+count_up <- function(x) {
+  length(unique(x))
+}
+
+#use the function to count and aggregate the states
+fac_per_state_conus <- aggregate(FUN = count_up, data=mh2015_puf_conus, . ~ LST)
+
+#display a few of the states
+head(fac_per_state_conus)
+
+#isolate the state abbreviations and counts
+fac_per_state_conus_t <- fac_per_state_conus[,c(1,2)]
+
+#rename the facility count column
+colnames(fac_per_state_conus_t)[2] <- "facility_count"
+
+#verify the class of the final table
+class(fac_per_state_conus_t)
+
+#display the state count table
+fac_per_state_conus_t
+```
+
+### d. Create ggplot of facilities
+
+```{r ggplot of facilities}
+#load ggplot library for barplot
+library(ggplot2)
+
+#load dplyr to count rows
+library(dplyr)
+
+#make states column a factor to create colors per state
+fac_per_state_conus_t$LST <- as.factor(fac_per_state_conus_t$LST)
+#verify class as factor
+class(fac_per_state_conus_t$LST)
+
+#make all main labels centered
+theme_update(plot.title = element_text(hjust = 0.5))
+
+#create plot dataset
+va_plot <- ggplot(data = fac_per_state_conus_t, aes(x=LST, y=facility_count, fill = LST)) + geom_bar(stat = "identity")
+
+#display plot, rotate state labels and add table and axis lables
+va_plot + theme(axis.text.x=element_text(angle = 90, vjust = 0.5), legend.position="none") + scale_color_manual(values = LST) + labs(title="Number of VA Facilities by State", fill = "State", x= "State", y= "Facility Count")
+
+#these were some color options I was playing with and will return to experiment with later
+#library(RColorBrewer)
+#library(wesanderson)
+#va_plot <- ggplot(data = fac_per_state_conus_t, aes(x=LST, y=facility_count, fill = LST)) + geom_bar(stat = "identity")
+#va_plot + theme(axis.text.x=element_text(angle = 90, vjust = 0.5), legend.position="top") +scale_color_manual(values=wes_palette(name="Royal1"))
+#https://ggplot2.tidyverse.org/reference/scale_manual.html
+#https://ggplot2.tidyverse.org/reference/scale_brewer.html
+```
+## Clean and Bring in New Features
+
+### a. Read statesize.csv into file
+```{r add new data}
+statesize <- read.csv("~/Dropbox/Senkungu Fam/Education/SMU/Courses/MSDS 6306 Doing Data Science/Homework/Assignment 10/statesize.csv", header = TRUE)
+fac_per_state_sizes <- merge(fac_per_state_conus_t, statesize, by.x = "LST", by.y = "Abbrev")
+fac_per_state_sizes
+```
+I'm not sure what the question is referring to regarding the paste() function. All that I can see regarding any difference is that the state size table doesn't include DC. It may be a reference to the extra spaces in the LST column, but I stripped those out to make the subset in problem 1.
+
+### b. Correct the state problem
+
+I was able to merge the tables in part a. with no issues except the one stated regarding the stripped extra spaces.
+
+### c. VA Hospitals per 1000 square miles
+
+```{r hospitals per 1000 sq mi}
+#check data type to see if we can do math
+str(fac_per_state_sizes)
+
+#calculation and field creation for facilities per 1000 sq miles
+fac_per_state_sizes$state_fac_rate <- fac_per_state_sizes$facility_count/(fac_per_state_sizes$SqMiles/1000)
+
+#display table
+fac_per_state_sizes
+```
+
+### d. Plot of VAs per square thousand miles
+
+```{r plot per thousand sq mi}
+#create plot dataset
+va_plot_sqft <- ggplot(data = fac_per_state_sizes, aes(x=reorder(LST, -state_fac_rate), y=state_fac_rate, fill = Region)) + geom_bar(stat = "identity")
+
+#display plot, rotate state labels and add table and axis lables
+va_plot_sqft + theme(axis.text.x=element_text(angle = 90, vjust = 0.5)) + scale_color_manual(values = Region) + labs(title="Number of VA Facilities per Thousand Sq Miles by State", fill = "State", x= "State", y= "Facility Count per 1000 Miles")
+```
+
+### e. Observations of Facility Rate by Region
+
+The rate of facilities seems to be particularly high in the northeast. I'm sure that's mostly due to population density and relatively smaller state size. 
+
+The south seems to be pretty much in the midrage with the exception of Maryland and Deleware which while maybe technically in the South would be considered more Northeast than South today.
+
+The West seems to be on the low end of the spectrum for exactly the opposite reason. There are large states with spread out populations. For example, California has almost twice the population of New York, but more than 3 times the size. If the military populations occur at anything like the same rate, it would make sense that the facilities per 1000 sq ft would be higher in New York.
+
+Before beginning modeling, I'd suggest that we also do a heat map of population density and overlay the VA locations. Even better would be an overlay of a military veterans location heatmap with VA locations. If we could combine this with a proxy for where the need is like wait times or utilization rates, that would drive where new facilities are more needed.
+
+Then do a random forest because that seems to be the asnwer to every issue. :)
